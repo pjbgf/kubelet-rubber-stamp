@@ -2,23 +2,21 @@ package main
 
 import (
 	"flag"
+	"os"
 	"runtime"
 
 	"github.com/kontena/kubelet-rubber-stamp/pkg/apis"
 	"github.com/kontena/kubelet-rubber-stamp/pkg/controller"
-	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
-	sdkVersion "github.com/operator-framework/operator-sdk/version"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
+	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 )
 
 func printVersion() {
 	klog.V(2).Infof("Go Version: %s", runtime.Version())
 	klog.V(2).Infof("Go OS/Arch: %s/%s", runtime.GOOS, runtime.GOARCH)
-	klog.V(2).Infof("operator-sdk Version: %v", sdkVersion.Version)
 }
 
 func main() {
@@ -29,11 +27,7 @@ func main() {
 
 	printVersion()
 
-	namespace, err := k8sutil.GetWatchNamespace()
-	if err != nil {
-		klog.Fatalf("failed to get watch namespace: %v", err)
-	}
-
+	namespace, _ := os.LookupEnv("WATCH_NAMESPACE")
 	// Get a config to talk to the apiserver
 	cfg, err := config.GetConfig()
 	if err != nil {
